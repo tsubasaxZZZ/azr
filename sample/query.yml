@@ -1,0 +1,36 @@
+- name: test1
+  query: |
+    resources
+    | where type =~ "microsoft.compute/virtualmachines"
+- name: test2
+  query: |
+    resources
+    | take 10
+- name: test3
+  query: |
+    resources
+    | take 10
+- name: test4
+  query: |
+    resources
+    | take 10
+
+- name: test5
+  query: |
+    resources
+    | take 10
+
+- name: test6
+  query: |
+    resources
+    | take 10
+
+- name: test7
+  query: |
+    resources
+    | take 10
+
+- name: test8
+  query: |
+    resources
+    | take 10

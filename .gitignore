@@ -1,0 +1,4 @@
+*.exe
+azr
+*.csv
+./*.yml
