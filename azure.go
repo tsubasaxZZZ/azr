@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/Azure/azure-sdk-for-go/services/resourcegraph/mgmt/2019-04-01/resourcegraph"
+	"github.com/Azure/azure-sdk-for-go/services/resourcegraph/mgmt/2019-04-01/resourcegraph/resourcegraphapi"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
@@ -20,7 +21,7 @@ type ResourceGraphQueryRequestInput struct {
 // Client is an API Client for Azure
 type Client struct {
 	SubscriptionID      string
-	ResourceGraphClient resourcegraph.OperationsClient
+	ResourceGraphClient resourcegraphapi.BaseClientAPI
 }
 
 // NewClient returns *Client with setting Authorizer
