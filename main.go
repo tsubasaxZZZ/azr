@@ -16,7 +16,7 @@ import (
 
 const (
 	// QueryConcurrency is number of query concurrency
-	QueryConcurrency = 20
+	QueryConcurrency = 5
 )
 
 func main() {
