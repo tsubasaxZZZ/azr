@@ -8,8 +8,10 @@
     | take 10
 - name: test3
   query: |
-    resources
-    | take 10
+    resources 
+    | where type =~ "microsoft.compute/virtualmachines"
+    | project id,name,vmSize=properties.hardwareProfile.vmSize
+    | summarize count(vmSize) by tostring(vmSize)
 - name: test4
   query: |
     resources

@@ -4,6 +4,11 @@ Get resources by Azure ResourceGraph
 # Description
 `azr` is a tool to list Azure resources.
 
+# Install
+1. Go to release page
+    - https://github.com/tsubasaxZZZ/azr/releases
+2. Download and extract
+
 # Usage
 This tool requires Azure CLI and read permission for resources.
 
