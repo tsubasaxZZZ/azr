@@ -2,3 +2,4 @@
 azr
 *.csv
 ./*.yml
+azure.auth

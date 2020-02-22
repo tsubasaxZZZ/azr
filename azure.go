@@ -9,6 +9,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/resourcegraph/mgmt/2019-04-01/resourcegraph"
 	"github.com/Azure/azure-sdk-for-go/services/resourcegraph/mgmt/2019-04-01/resourcegraph/resourcegraphapi"
+	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
@@ -26,10 +27,12 @@ type Client struct {
 
 // NewClient returns *Client with setting Authorizer
 func NewClient(subscriptionID string) (*Client, error) {
-	//a, err := auth.NewAuthorizerFromFile(azure.PublicCloud.ResourceManagerEndpoint)
 	a, err := auth.NewAuthorizerFromCLI()
 	if err != nil {
-		return &Client{}, err
+		a, err = auth.NewAuthorizerFromFile(azure.PublicCloud.ResourceManagerEndpoint)
+		if err != nil {
+			return &Client{}, err
+		}
 	}
 
 	resourceGraphClient := resourcegraph.NewOperationsClient()
@@ -81,7 +84,6 @@ func FetchResourceGraphData(c context.Context, client *Client, params ResourceGr
 	if err != nil {
 		return nil, err
 	}
-
 	columns := queryResponse.Data.(map[string]interface{})["columns"]
 	rows := queryResponse.Data.(map[string]interface{})["rows"]
 

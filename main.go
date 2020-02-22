@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
 	"strings"
-	"sync"
 
 	"github.com/urfave/cli/v2"
+	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 	"gopkg.in/yaml.v2"
 )
@@ -52,7 +53,7 @@ func main() {
 	}
 }
 func before(c *cli.Context) error {
-	log.SetOutput(os.Stderr)
+	//log.SetOutput(os.Stderr)
 	return nil
 }
 
@@ -105,33 +106,34 @@ func GetResources(c *cli.Context) error {
 
 	}
 
-	var wg sync.WaitGroup
-
+	eg := errgroup.Group{}
 	s := semaphore.NewWeighted(QueryConcurrency)
 	for _, qc := range qcs {
-		wg.Add(1)
 		s.Acquire(context.Background(), 1)
 
 		qc := qc
 
-		go func() error {
-			defer s.Release(1)
-			defer wg.Done()
+		eg.Go(
+			func() error {
+				defer s.Release(1)
 
-			regexNewLine := regexp.MustCompile(`\r\n|\r|\n`)
-			log.Printf("Get resource graph:Name=[%s],Query=[%s]", qc.Name, regexNewLine.ReplaceAllString(qc.Query, ""))
-			data, errGet := getResourceGraphData(c, &qc, client)
-			if errGet != nil {
-				return errGet
-			}
-			if err := data.OutputToFile(qc.Output); err != nil {
-				return err
-			}
-			return nil
-		}()
+				regexNewLine := regexp.MustCompile(`\r\n|\r|\n`)
+				log.Printf("Get resource graph:Name=[%s],Query=[%s]", qc.Name, regexNewLine.ReplaceAllString(qc.Query, ""))
+				data, errGet := getResourceGraphData(c, &qc, client)
+				if errGet != nil {
+					return fmt.Errorf("Name: %s, Error: %s", qc.Name, errGet)
+				}
+				if err := data.OutputToFile(qc.Output); err != nil {
+					return err
+				}
+				return nil
+			})
 
 	}
-	wg.Wait()
+
+	if err := eg.Wait(); err != nil {
+		log.Fatal(err)
+	}
 
 	return nil
 }
