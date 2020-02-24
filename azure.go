@@ -17,6 +17,8 @@ type ResourceGraphQueryRequestInput struct {
 	subscriptionID string
 	query          string
 	facets         []string
+	skipToken      string
+	skip           int32
 }
 
 // Client is an API Client for Azure
@@ -65,6 +67,7 @@ func (data FetchData) OutputToFile(output *os.File) error {
 	return nil
 }
 func FetchResourceGraphData(c context.Context, client *Client, params ResourceGraphQueryRequestInput) (*FetchData, error) {
+	var fetchData FetchData
 	var facetRequest []resourcegraph.FacetRequest
 	for i := 0; i < len(params.facets); i++ {
 		facetRequest = append(
@@ -77,21 +80,31 @@ func FetchResourceGraphData(c context.Context, client *Client, params ResourceGr
 	request := &resourcegraph.QueryRequest{
 		Subscriptions: &[]string{params.subscriptionID},
 		Query:         &params.query,
-		Options:       &resourcegraph.QueryRequestOptions{ResultFormat: resourcegraph.ResultFormatTable},
+		Options:       &resourcegraph.QueryRequestOptions{ResultFormat: resourcegraph.ResultFormatTable, SkipToken: &params.skipToken, Skip: &params.skip},
 		Facets:        &facetRequest,
 	}
 	queryResponse, err := client.ResourceGraphClient.Resources(c, *request)
 	if err != nil {
 		return nil, err
 	}
+
+	if queryResponse.SkipToken != nil {
+		params.skipToken = *queryResponse.SkipToken
+		params.skip += int32(*queryResponse.Count)
+		_data, err := FetchResourceGraphData(c, client, params)
+		if err != nil {
+			return nil, err
+		}
+		for _, elem := range _data.Data {
+			fetchData.Data = append(fetchData.Data, elem)
+		}
+	}
 	columns := queryResponse.Data.(map[string]interface{})["columns"]
 	rows := queryResponse.Data.(map[string]interface{})["rows"]
 
-	header := []string{}
 	for _, column := range columns.([]interface{}) {
-		header = append(header, column.(map[string]interface{})["name"].(string))
+		fetchData.Header = append(fetchData.Header, column.(map[string]interface{})["name"].(string))
 	}
-	results := [][]string{}
 	// 取得したデータを1行ずつ処理
 	for _, row := range rows.([]interface{}) {
 		_result := []string{}
@@ -109,11 +122,7 @@ func FetchResourceGraphData(c context.Context, client *Client, params ResourceGr
 				_result = append(_result, string(j))
 			}
 		}
-		// 1 行をカンマ区切りの1文字列とする
-		results = append(results, _result)
+		fetchData.Data = append(fetchData.Data, _result)
 	}
-	return &FetchData{
-		Header: header,
-		Data:   results,
-	}, nil
+	return &fetchData, nil
 }
