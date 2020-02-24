@@ -20,19 +20,19 @@
 - name: test5
   query: |
     resources
-    | take 10
+    | take 20
 
 - name: test6
   query: |
     resources
-    | take 10
+    | take 30
 
 - name: test7
   query: |
     resources
-    | take 10
+    | take 40
 
 - name: test8
   query: |
     resources
-    | take 10
+    | take 50
