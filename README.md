@@ -79,6 +79,16 @@ GLOBAL OPTIONS:
    --file value, -f value   Speify output filepath(If not specify, out to stdout)
    --help, -h               show help (default: false)
 ```
+# Authentication
+You can use `AZURE_AUTH_LOCATION` environment. If you set this environment variable, this tool read credential from this file.
+
+```bash
+export AZURE_AUTH_LOCATION=azure.auth
+az ad sp create-for-rbac --sdk-auth > azure.auth
+```
+
+Please read this document:
+https://docs.microsoft.com/en-us/azure/go/azure-sdk-go-authorization#use-file-based-authentication
 
 # Sample
 Please see sample directory.
