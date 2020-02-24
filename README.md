@@ -37,7 +37,13 @@ If the first character of the `-q` option starts with `@`, the character string 
   query: |
     resources
     | where type =~ "microsoft.compute/virtualmachines"
+# You get only 1000 result if you don't include 'id' column.
 - name: test2
+  query: |
+    resources
+    | where type =~ "microsoft.compute/virtualmachines"
+    | project id,name
+- name: test3
   query: |
     resources
     | take 10
@@ -52,6 +58,9 @@ az account set --subscription <Your subscriptionID>
 ```
 
 Result is output file to :`<name>.csv`
+
+## Limitation
+If you get more than 1000 results, you need to include the id in the project. Otherwise, only 1000 results will be returned.
 
 ## Help
 ```bash
