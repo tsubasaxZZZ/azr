@@ -1,38 +1,37 @@
-- name: test1
+- name: AllResourcesCount
   query: |
     resources
-    | where type =~ "microsoft.compute/virtualmachines"
-- name: test2
+    | summarize count() by type
+    | sort by count_
+- name: AllResourcesCountByResourceGroup
   query: |
     resources
-    | take 10
-- name: test3
-  query: |
-    resources 
-    | where type =~ "microsoft.compute/virtualmachines"
-    | project id,name,vmSize=properties.hardwareProfile.vmSize
-    | summarize count(vmSize) by tostring(vmSize)
-- name: test4
+    | summarize count() by resourceGroup
+    | sort by resourceGroup,count_
+- name: AllResourcesCountByResourceGroupAndType
   query: |
     resources
-    | take 10
-
-- name: test5
+    | summarize count() by resourceGroup,type
+    | sort by resourceGroup
+- name: AllSecurityAssesmentCountByTypeAndResourceGroup
   query: |
-    resources
-    | take 10
-
-- name: test6
+    securityresources
+    | where properties.status.code !~ "Healthy"
+    | where type=~"microsoft.security/assessments"
+    | summarize count() by type,resourceGroup
+- name: SecurityAssesment
   query: |
-    resources
-    | take 10
-
-- name: test7
+    securityresources
+    | where type=~"microsoft.security/assessments"
+    | where properties.status.code !~ "Healthy"
+    | project id,displayName=tostring(properties.displayName),resourceId=tostring(properties.resourceDetails.Id),categories=properties.metadata.categories,userImpact=tostring(properties.metadata.userImpact),severity=tostring(properties.metadata.severity),threats=tostring(properties.metadata.threats)
+    | sort by userImpact,severity
+- name: SecurityAssesmentCategorizeDisplayName
   query: |
-    resources
-    | take 10
-
-- name: test8
-  query: |
-    resources
-    | take 10
+    securityresources
+    | where type=~"microsoft.security/assessments"
+    | where properties.status.code !~ "Healthy"
+    | project id,displayName=tostring(properties.displayName),resourceId=tostring(properties.resourceDetails.Id),categories=replace(@'"|\[|\]','',tostring(properties.metadata.categories)),userImpact=replace(@'"|\[|\]','',tostring(properties.metadata.userImpact)),severity=replace(@'"|\[|\]','',tostring(properties.metadata.severity)),threats=replace(@'"|\[|\]','',tostring(properties.metadata.threats)),description=tostring(properties.metadata.description),cause=tostring(properties.status.cause),code=tostring(properties.status.code)
+    | where code =~ "Unhealthy" // Exclude NotApplicable
+    | sort by userImpact,severity
+    | summarize resourceId=replace(@'"|\[|\]','',tostring(makelist(resourceId))) by categories,displayName,severity,userImpact,threats,description,cause,code
