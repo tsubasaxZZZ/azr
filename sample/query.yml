@@ -6,6 +6,7 @@
 - name: AllResourcesCountByResourceGroup
   query: |
     resources
+<<<<<<< HEAD
     | summarize count() by resourceGroup
     | sort by resourceGroup,count_
 - name: AllResourcesCountByResourceGroupAndType
@@ -35,3 +36,36 @@
     | where code =~ "Unhealthy" // Exclude NotApplicable
     | sort by userImpact,severity
     | summarize resourceId=replace(@'"|\[|\]','',tostring(makelist(resourceId))) by categories,displayName,severity,userImpact,threats,description,cause,code
+=======
+    | take 10
+- name: test3
+  query: |
+    resources 
+    | where type =~ "microsoft.compute/virtualmachines"
+    | project id,name,vmSize=properties.hardwareProfile.vmSize
+    | summarize count(vmSize) by tostring(vmSize)
+- name: test4
+  query: |
+    resources
+    | take 10
+
+- name: test5
+  query: |
+    resources
+    | take 20
+
+- name: test6
+  query: |
+    resources
+    | take 30
+
+- name: test7
+  query: |
+    resources
+    | take 40
+
+- name: test8
+  query: |
+    resources
+    | take 50
+>>>>>>> 526c5c74040d74a6f97921fa6cacb10af471c885

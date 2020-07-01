@@ -63,6 +63,19 @@ type QueryConfig struct {
 	Output *os.File
 }
 
+func validationYAMLConfig(config *[]QueryConfig) error {
+	// name の重複チェック
+	names := map[string]int{}
+	for i := 0; i < len(*config); i++ {
+		names[(*config)[i].Name]++
+	}
+	for k, v := range names {
+		if v > 1 {
+			return fmt.Errorf("%s is duplicate. Please change other name", k)
+		}
+	}
+	return nil
+}
 func GetResources(c *cli.Context) error {
 	client, err := NewClient(c.String("subscriptionID"))
 	if err != nil {
@@ -83,6 +96,12 @@ func GetResources(c *cli.Context) error {
 			return err
 		}
 
+		// YAML のバリデーション
+		if err := validationYAMLConfig(&qcs); err != nil {
+			return err
+		}
+
+		// <name>.csv で結果を保存する
 		for i := 0; i < len(qcs); i++ {
 			qcs[i].Output, err = os.Create(qcs[i].Name + ".csv")
 			if err != nil {
